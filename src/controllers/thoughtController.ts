@@ -82,6 +82,29 @@ export const addReaction = async (req: Request, res: Response): Promise<void> =>
     }
 };
 
+export const updateReaction = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { thoughtId, reactionId } = req.params;
+        const { reactionBody } = req.body;
+
+        const thought = await Thought.findOneAndUpdate(
+            { _id: thoughtId, 'reactions.reactionId': reactionId }, // Match the thought and the reaction
+            { $set: { 'reactions.$.reactionBody': reactionBody } }, // Update the specific reaction's body
+            { new: true, runValidators: true } // Return the updated thought
+        );
+
+        if (!thought) {
+            res.status(404).json({ message: 'Thought or reaction not found' });
+            return;
+        }
+
+        res.json(thought); // Respond with the updated thought
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Failed to update reaction' });
+    }
+};
+
 export const removeReaction = async (req: Request, res: Response): Promise<void> => {
     try {
         const thought = await Thought.findByIdAndUpdate(

@@ -46,9 +46,8 @@ export const updateUser = async (req: Request, res: Response): Promise<void> => 
         if (!user) {
             res.status(404).json({ message: 'User not found' });
         } else {
-            res.json(user);
+            res.json(user); // Only one response
         }
-        res.json(user);
     } catch (err) {
         res.status(500).json(err);
     }
@@ -59,13 +58,12 @@ export const deleteUser = async (req: Request, res: Response): Promise<void> => 
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) {
             res.status(404).json({ message: 'User not found' });
-        } else {
-            res.json(user);
+            return; // Exit the function to prevent further responses
         }
-        if (user && user.thoughts?.length) {
+        if (user.thoughts?.length) {
             await Thought.deleteMany({ _id: { $in: user.thoughts } });
-            res.json({ message: 'User and all of their thoughts have been deleted... permanently...' });
         }
+        res.json({ message: 'User and all of their thoughts have been deleted... permanently...' }); // Only one response
     } catch (err) {
         res.status(500).json(err);
     }
